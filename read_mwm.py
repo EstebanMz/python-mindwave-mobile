@@ -13,7 +13,7 @@
 # - Raw Data
 # - Meditation
 # - Attention
-# - Poor Signal Level
+# - Amount of Noise (also known as Poor Signal Level)
 # - Blink (Not working)
 
 import time
@@ -32,11 +32,13 @@ if __name__ == '__main__':
 
     if (mindwaveDataPointReader.isConnected()):
         # Initialize all variables
-        rawValue = attention = meditation = blink = delta = theta = lowAlpha = highAlpha = lowBeta = highBeta = lowGamma = midGamma = amountOfNoise = None
-        
+        rawValue = attention = meditation = amountOfNoise = blink = None
+        delta = theta = lowAlpha = highAlpha = lowBeta = highBeta = lowGamma = midGamma = None
+        data_header = "eeg_power;raw_value;attention;meditation;amount_of_noise"
+
         # Print Header
         # EEG_Power = Delta;Theta;LowAlpha;HighAlpha;LowBeta;HighBeta;LowGamma;MidGamma
-        print("EEG_Power;RawValue;Attention;Meditation;AmountOfNoise")
+        print(data_header)
 
         # Endless read cycle
         while(True):
@@ -72,13 +74,13 @@ if __name__ == '__main__':
                     lowBeta, highBeta = dataPoint.lowBeta, dataPoint.highBeta
                     lowGamma, midGamma = dataPoint.lowGamma, dataPoint.midGamma
                     
-                    # delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, midGamma = dataPoint.delta, dataPoint.theta, dataPoint.lowAlpha, dataPoint.highAlpha, dataPoint.lowBeta, dataPoint.highBeta, dataPoint.lowGamma, dataPoint.midGamma
                     # Prints on console all data collected in a cycle.
                     print(
                         f"[{delta},{theta},{lowAlpha},{highAlpha},"\
                         f"{lowBeta},{highBeta},{lowGamma},{midGamma}];"\
                         f"{rawValue};{attention};{meditation};{amountOfNoise}"
                     )
+    
     # Error message when device is not connected or couldn't be found.
     else:
         print((
