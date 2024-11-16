@@ -59,7 +59,9 @@ if __name__ == '__main__':
                     elif isinstance(dataPoint, EEGPowersDataPoint):
                         delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, midGamma = dataPoint.delta, dataPoint.theta, dataPoint.lowAlpha, dataPoint.highAlpha, dataPoint.lowBeta, dataPoint.highBeta, dataPoint.lowGamma, dataPoint.midGamma
                         # Prints on console all data collected in a cycle.
-                        print(f"{attention};{meditation};{delta};{theta};{lowAlpha};{highAlpha};{lowBeta};{highBeta};{lowGamma};{midGamma};{amountOfNoise}")
+                        print(
+                            f"{attention};{meditation};{delta};{theta};{lowAlpha};{highAlpha};{lowBeta};{highBeta};{lowGamma};{midGamma};{amountOfNoise}"
+                            )
     # Error message when device is not connected.
     else:
         print((textwrap.dedent("""\
