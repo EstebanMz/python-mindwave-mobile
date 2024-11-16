@@ -6,13 +6,15 @@
 # - Add digital filters and plots.
 # - Add a periodic visual or sound alarm and set an amount of time the MindWave will run.
 
-# This module reads data from the Mindwave Mobile EEG headset and prints it to the console.
-# It connects to the headset, reads data points, and displays the values for:
+# This module reads data from the Mindwave Mobile EEG headset and prints it 
+# to the console. It connects to the headset, reads data points, 
+# and displays the values for:
+# - EEG Power Bands (Delta, Theta, Low Alpha, High Alpha, Low Beta, High Beta, Low Gamma, Mid Gamma)
+# - Raw Data
 # - Meditation
 # - Attention
-# - Blink (Not working)
-# - EEG Power Bands (Delta, Theta, Low Alpha, High Alpha, Low Beta, High Beta, Low Gamma, Mid Gamma)
 # - Poor Signal Level
+# - Blink (Not working)
 
 import time
 import bluetooth
@@ -27,44 +29,60 @@ import textwrap
 if __name__ == '__main__':
     mindwaveDataPointReader = MindwaveDataPointReader()
     mindwaveDataPointReader.start()
-    
+
     if (mindwaveDataPointReader.isConnected()):
         # Initialize all variables
-        attention = meditation = blink = delta = theta = lowAlpha = highAlpha = lowBeta = highBeta = lowGamma = midGamma = amountOfNoise = None
-        # Print Header
-        print("Attention;Meditation;Delta;Theta;LowAlpha;HighAlpha;LowBeta;HighBeta;LowGamma;MidGamma;AmountOfNoise")
+        rawValue = attention = meditation = blink = delta = theta = lowAlpha = highAlpha = lowBeta = highBeta = lowGamma = midGamma = amountOfNoise = None
         
+        # Print Header
+        # EEG_Power = Delta;Theta;LowAlpha;HighAlpha;LowBeta;HighBeta;LowGamma;MidGamma
+        print("EEG_Power;RawValue;Attention;Meditation;AmountOfNoise")
+
         # Endless read cycle
         while(True):
             # DataPoint is the class that reads the next data point from the headset.
             dataPoint = mindwaveDataPointReader.readNextDataPoint()
-            if (not dataPoint.__class__ is RawDataPoint):
-                
-                # Checks if the dataPoint object belongs to one of the specified data point classes.
-                # If the dataPoint is an instance of one of these classes, the code then proceeds to extract the specific data value from that data point object.
-                if isinstance(dataPoint, (PoorSignalLevelDataPoint, AttentionDataPoint, MeditationDataPoint, BlinkDataPoint, EEGPowersDataPoint)):
+
+            # Checks if the dataPoint object belongs to one of the specified
+            # data point classes. If the dataPoint is an instance of one 
+            # of these classes, the code then proceeds to extract 
+            # the specific data value from that data point object.
+            if isinstance(dataPoint, (PoorSignalLevelDataPoint, AttentionDataPoint, 
+                                      MeditationDataPoint, BlinkDataPoint, 
+                                      RawDataPoint, EEGPowersDataPoint)):
+
+                if isinstance(dataPoint, PoorSignalLevelDataPoint):
+                    amountOfNoise = dataPoint.amountOfNoise
+
+                elif isinstance(dataPoint, AttentionDataPoint):
+                    attention = dataPoint.attentionValue
+
+                elif isinstance(dataPoint, MeditationDataPoint):
+                    meditation = dataPoint.meditationValue
+
+                elif isinstance(dataPoint, BlinkDataPoint):
+                    blink = dataPoint.blinkValue
+
+                elif isinstance(dataPoint, RawDataPoint):
+                    rawValue = dataPoint.rawValue
+
+                elif isinstance(dataPoint, EEGPowersDataPoint):
+                    delta, theta = dataPoint.delta, dataPoint.theta 
+                    lowAlpha, highAlpha = dataPoint.lowAlpha, dataPoint.highAlpha
+                    lowBeta, highBeta = dataPoint.lowBeta, dataPoint.highBeta
+                    lowGamma, midGamma = dataPoint.lowGamma, dataPoint.midGamma
                     
-                    if isinstance(dataPoint, PoorSignalLevelDataPoint):
-                        amountOfNoise = dataPoint.amountOfNoise
-                    
-                    elif isinstance(dataPoint, AttentionDataPoint):
-                        attention = dataPoint.attentionValue
-                    
-                    elif isinstance(dataPoint, MeditationDataPoint):
-                        meditation = dataPoint.meditationValue
-                    
-                    elif isinstance(dataPoint, BlinkDataPoint):
-                        blink = dataPoint.blinkValue
-                    
-                    elif isinstance(dataPoint, EEGPowersDataPoint):
-                        delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, midGamma = dataPoint.delta, dataPoint.theta, dataPoint.lowAlpha, dataPoint.highAlpha, dataPoint.lowBeta, dataPoint.highBeta, dataPoint.lowGamma, dataPoint.midGamma
-                        # Prints on console all data collected in a cycle.
-                        print(
-                            f"{attention};{meditation};{delta};{theta};{lowAlpha};{highAlpha};{lowBeta};{highBeta};{lowGamma};{midGamma};{amountOfNoise}"
-                            )
-    # Error message when device is not connected.
+                    # delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, midGamma = dataPoint.delta, dataPoint.theta, dataPoint.lowAlpha, dataPoint.highAlpha, dataPoint.lowBeta, dataPoint.highBeta, dataPoint.lowGamma, dataPoint.midGamma
+                    # Prints on console all data collected in a cycle.
+                    print(
+                        f"[{delta},{theta},{lowAlpha},{highAlpha},"\
+                        f"{lowBeta},{highBeta},{lowGamma},{midGamma}];"\
+                        f"{rawValue};{attention};{meditation};{amountOfNoise}"
+                    )
+    # Error message when device is not connected or couldn't be found.
     else:
-        print((textwrap.dedent("""\
+        print((
+            textwrap.dedent("""\
             Exiting because the program could not connect
-            to the MindWave Mobile device.""").replace("\n", " ")))
-        
+            to the MindWave Mobile device.""").replace("\n", " ")
+            ))
