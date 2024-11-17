@@ -1,32 +1,36 @@
-# read_mwm.py
-# @author: Esteban Martínez
+# app.py
+# @author: Esteban Martinez
+# @github: EstebanMz
 
-# TO-DO LIST
-# - Store collected data in a CSV file every time the file is run.
-# - Add digital filters and plots.
-# - Add a periodic visual or sound alarm and set an amount of time the MindWave will run.
-
-# This module reads data from the Mindwave Mobile EEG headset and prints it 
-# to the console. It connects to the headset, reads data points, 
-# and displays the values for:
+# This module reads data from the Mindwave Mobile EEG headset 
+# and stores it as a CSV file inside "output_files" folder.
+# The length of the output files depends on "OUTPUT_LENGTH" value
+# at the beginning of the code (line 25).
+# The data saved from the sensor is: 
 # - EEG Power Bands (Delta, Theta, Low Alpha, High Alpha, Low Beta, High Beta, Low Gamma, Mid Gamma)
 # - Raw Data
 # - Meditation
 # - Attention
+# - Blink (Only displays "None")
 # - Amount of Noise (also known as Poor Signal Level)
-# - Blink (Not working)
 
-import time
 import bluetooth
 from mindwavemobile.MindwaveDataPoints import RawDataPoint, PoorSignalLevelDataPoint, AttentionDataPoint, MeditationDataPoint, BlinkDataPoint, EEGPowersDataPoint
 from mindwavemobile.MindwaveDataPointReader import MindwaveDataPointReader
-import textwrap
+from MindwaveWriteData import writeData
+import os
+
+# Length (rows) for output CSV files.
+OUTPUT_LENGTH = 50
 
 # Main execution block.
-
 # Initializes the MindwaveDataPointReader, starts the connection,
 # and continuously reads and prints data points.
 if __name__ == '__main__':
+
+    # Clear console
+    os.system('clear')
+
     mindwaveDataPointReader = MindwaveDataPointReader()
     mindwaveDataPointReader.start()
 
@@ -34,14 +38,16 @@ if __name__ == '__main__':
         # Initialize all variables
         rawValue = attention = meditation = amountOfNoise = blink = None
         delta = theta = lowAlpha = highAlpha = lowBeta = highBeta = lowGamma = midGamma = None
-        data_header = "eeg_power;raw_value;attention;meditation;amount_of_noise"
 
-        # Print Header
-        # EEG_Power = Delta;Theta;LowAlpha;HighAlpha;LowBeta;HighBeta;LowGamma;MidGamma
-        print(data_header)
+        # eeg_power = [Delta,Theta,LowAlpha,HighAlpha,LowBeta,HighBeta,LowGamma,MidGamma]
+        dataHeader = "eeg_power;raw_value;attention;meditation;blink;amount_of_noise"
+        data = [dataHeader]
 
-        # Endless read cycle
-        while(True):
+        print("Data reading is starting now!")
+
+        # Program will end after "data" array reaches OUTPUT_LENGTH size
+        while(len(data) <= OUTPUT_LENGTH):
+
             # DataPoint is the class that reads the next data point from the headset.
             dataPoint = mindwaveDataPointReader.readNextDataPoint()
 
@@ -52,7 +58,7 @@ if __name__ == '__main__':
             if isinstance(dataPoint, (PoorSignalLevelDataPoint, AttentionDataPoint, 
                                       MeditationDataPoint, BlinkDataPoint, 
                                       RawDataPoint, EEGPowersDataPoint)):
-
+                
                 if isinstance(dataPoint, PoorSignalLevelDataPoint):
                     amountOfNoise = dataPoint.amountOfNoise
 
@@ -74,17 +80,22 @@ if __name__ == '__main__':
                     lowBeta, highBeta = dataPoint.lowBeta, dataPoint.highBeta
                     lowGamma, midGamma = dataPoint.lowGamma, dataPoint.midGamma
                     
-                    # Prints on console all data collected in a cycle.
-                    print(
-                        f"[{delta},{theta},{lowAlpha},{highAlpha},"\
+                    # Stores a row of data values
+                    dataRow = f"[{delta},{theta},{lowAlpha},{highAlpha},"\
                         f"{lowBeta},{highBeta},{lowGamma},{midGamma}];"\
-                        f"{rawValue};{attention};{meditation};{amountOfNoise}"
-                    )
+                        f"{rawValue};{attention};{meditation};{blink};{amountOfNoise}"
+                    data.append(dataRow)
+
+        # Create an instance of the class
+        exportData = writeData(data)
+
+        # Call the method to write data to CSV
+        exportData.writeFile()
+        
     
     # Error message when device is not connected or couldn't be found.
     else:
-        print((
-            textwrap.dedent("""\
-            Exiting because the program could not connect
-            to the MindWave Mobile device.""").replace("\n", " ")
-            ))
+        print(
+            "Exiting because the program could not connect "\
+            "to the MindWave Mobile device."
+            )
