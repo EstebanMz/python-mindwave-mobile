@@ -20,11 +20,22 @@ import bluetooth
 from mindwavemobile.MindwaveDataPoints import RawDataPoint, PoorSignalLevelDataPoint, AttentionDataPoint, MeditationDataPoint, BlinkDataPoint, EEGPowersDataPoint
 from mindwavemobile.MindwaveDataPointReader import MindwaveDataPointReader
 from MindwaveWriteData import writeData
+from playsound import playsound
+import threading
+import time
 import os
 
 # Length (rows) for output CSV files.
 SHORT_OUTPUT_LENGTH = 120
 LONG_OUTPUT_LENGTH = 240
+
+
+
+# Plays a beep of 0.5 seconds
+def playBeep():
+    while True:
+        playsound("app/beep.wav")
+        time.sleep(5)
 
 
 
@@ -44,6 +55,11 @@ def getDataPoints(readingTime):
     input("Press Enter key to continue...")
     print(f"Data reading is starting now for {readingTime/60} minutes!")
 
+    # Sound thread
+    soundThread = threading.Thread(target = playBeep)
+    soundThread.daemon = True
+    soundThread.start()
+    
     # Program will end after "data" array reaches "readingTime" size
     while(len(dataPointsArray) <= readingTime):
 
