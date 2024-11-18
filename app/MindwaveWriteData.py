@@ -16,7 +16,7 @@ class writeData:
         filename = now.strftime("output_files/%Y-%m-%d %H_%M_%S-MindwaveData.csv")
         
         # Create a DataFrame from the data
-        df = pd.DataFrame([x.split(';') for x in self.data_array])
+        df = pd.DataFrame([x.split(',') for x in self.data_array])
 
         # Save the DataFrame to a CSV file
         df.to_csv(filename, index=False, header=False)
