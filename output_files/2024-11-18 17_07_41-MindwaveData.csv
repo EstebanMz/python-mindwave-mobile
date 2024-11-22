@@ -1,6 +1,0 @@
-delta,theta,low_alpha,high_alpha,low_beta,high_beta,low_gamma,mid_gamma,raw_value,attention,meditation,blink,amount_of_noise
-4,1,1,0,0,2,2,0,34,0,0,None,None
-12,1,0,0,1,1,1,0,36,0,0,None,25
-203530,116763,89702,21896,7359,7529,11985,5224,43,0,0,None,25
-142796,49378,22657,17579,4533,4903,5558,3332,59,0,0,None,0
-18080,24060,6257,11553,7823,5352,5087,1930,108,0,0,None,0
