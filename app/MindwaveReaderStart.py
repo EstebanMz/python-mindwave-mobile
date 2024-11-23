@@ -45,6 +45,8 @@ testsQueueArray = [
     [f'Prueba larga para Imaginación motora del pie Derecho.', False, LONG_TEST_LENGTH],
     [f'Prueba larga para Imaginación motora del pie Izquierdo.', False, LONG_TEST_LENGTH],
     [f'Descanso largo.', True, LONG_TEST_LENGTH]
+    # [f'Prueba reposo.', True, 30],                  # Debugging
+    # [f'Prueba imaginación.', False, 30]             # Debugging
 ]
 
 
@@ -61,9 +63,12 @@ def printTestInfo(arrayLength, isResting, readingTime):
     elif (arrayLength - 1) % 5 == 0 and isResting == False:
         print('')
 
-    if arrayLength == (readingTime - 5):
-        print('\n'*9 + 'X'*50 + '\n' + 'X'*50)
-        print('La siguiente prueba inicia en 5 segundos.\n')
+    if arrayLength == (readingTime - 5) and isResting == False:
+        print('\n'*10 + 'X'*50 + '\n' + 'X'*50)
+        print('Esta prueba finaliza en 5 segundos.\n')
+    elif arrayLength == (readingTime - 5) and isResting == True:
+        print('\n'*2 + 'X'*50 + '\n' + 'X'*50)
+        print('Esta prueba finaliza en 5 segundos.\n')
 
 
 
@@ -77,7 +82,7 @@ def getDataPoints(isResting, readingTime):
 
     # Initialize the array that stores the sensor readings
     eegPower = "delta,theta,low_alpha,high_alpha,low_beta,high_beta,low_gamma,mid_gamma"
-    dataHeader = f"time_now,{eegPower},raw_value,attention,meditation,blink,amount_of_noise"
+    dataHeader = f"date_time,{eegPower},raw_value,attention,meditation,blink,amount_of_noise"
     dataPointsArray = [dataHeader]
 
     # Reading Data loop
@@ -112,14 +117,14 @@ def getDataPoints(isResting, readingTime):
             elif isinstance(dataPoint, EEGPowersDataPoint):
                 # Generate time_now with hour, minutes and seconds
                 now = datetime.datetime.now()
-                time_now = now.strftime("%H:%M:%S")
+                dateTime = now.strftime("%Y-%m-%d %H:%M:%S")
                 delta, theta = dataPoint.delta, dataPoint.theta 
                 lowAlpha, highAlpha = dataPoint.lowAlpha, dataPoint.highAlpha
                 lowBeta, highBeta = dataPoint.lowBeta, dataPoint.highBeta
                 lowGamma, midGamma = dataPoint.lowGamma, dataPoint.midGamma
                 
                 # Stores a row of data values
-                dataRow = f"{time_now},{delta},{theta},{lowAlpha},{highAlpha},"\
+                dataRow = f"{dateTime},{delta},{theta},{lowAlpha},{highAlpha},"\
                     f"{lowBeta},{highBeta},{lowGamma},{midGamma},"\
                     f"{rawValue},{attention},{meditation},{blink},{amountOfNoise}"
                 
@@ -166,7 +171,9 @@ if __name__ == '__main__':
 
         # Loop that runs the different test defined at testQueueArray.
         for test in testsQueueArray:
-            print(f"\n{test[0]} Duración: {round(test[2]/60, 1)} minutos.")
+            print('\n'*2 + '='*100 + '\n' + '='*100 + '\n')
+            print(f"\t{test[0]} Duración: {round(test[2]/60)} minutos.")
+            print('\n' + '='*100 + '\n' + '='*100 + '\n'*2)
             writeDataPoints(test[1], test[2])
 
         # Write the user info before finishing the connection with the MindWave.
@@ -176,6 +183,6 @@ if __name__ == '__main__':
     # Error message when device is not connected or couldn't be found.
     else:
         print(
-            "Exiting because the program could not connect "\
-            "to the MindWave Mobile device."
+            "\nError de conexión: No se pudo conectar con el dispositivo MindWave Mobile. "\
+            "Reinicia la diadema y ejecuta de nuevo el código."
             )
