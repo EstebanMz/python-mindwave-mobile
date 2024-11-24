@@ -38,14 +38,14 @@ LONG_TEST_LENGTH = 240
 # - test[1]: Is a resting test? (read printTestInfo() for context).
 # - test[2]: Length of the test, determined by one of the selected values above.
 testsQueueArray = [
-    [f'Prueba corta para Imaginaci�n motora del pie Derecho.', False, SHORT_TEST_LENGTH],
-    [f'Prueba corta para Imaginaci�n motora del pie Izquierdo.', False, SHORT_TEST_LENGTH],
+    [f'Prueba corta para Imaginación motora del pie Derecho.', False, SHORT_TEST_LENGTH],
+    [f'Prueba corta para Imaginación motora del pie Izquierdo.', False, SHORT_TEST_LENGTH],
     [f'Descanso corto.', True, SHORT_TEST_LENGTH],
-    [f'Prueba larga para Imaginaci�n motora del pie Derecho.', False, LONG_TEST_LENGTH],
-    [f'Prueba larga para Imaginaci�n motora del pie Izquierdo.', False, LONG_TEST_LENGTH],
+    [f'Prueba larga para Imaginación motora del pie Derecho.', False, LONG_TEST_LENGTH],
+    [f'Prueba larga para Imaginación motora del pie Izquierdo.', False, LONG_TEST_LENGTH],
     [f'Descanso largo.', True, LONG_TEST_LENGTH]
-    # [f'Prueba reposo.', True, 30],                  # Debugging
-    # [f'Prueba imaginaci�n.', False, 30]             # Debugging
+    # [f'Prueba reposo.', True, 60],                  # Debugging
+    # [f'Prueba imaginación.', False, 30]             # Debugging
 ]
 
 
@@ -54,20 +54,22 @@ testsQueueArray = [
 # - A block of text every 5 seconds that tells the volunteer to think in the
 #   correspondent imaginary movement. It takes in mind to not send this
 #   visual signal when it's a resting test.
-# - A notification when there are 5 seconds left for a running test.
+# - A notification when there are 15 seconds left for a running test.
 def printTestInfo(arrayLength, isResting, readingTime):
 
     if arrayLength % 5 == 0 and isResting == False:
         print('\n'*10 + 'X'*50 + '\n' + 'X'*50 + '\n' + 'X'*50)
     elif (arrayLength - 1) % 5 == 0 and isResting == False:
         print('')
+    elif (arrayLength + 1) % 15 == 0 and isResting == True:
+        print('')
 
-    if arrayLength == (readingTime - 5) and isResting == False:
+    if arrayLength == (readingTime - 15) and isResting == False:
         print('\n'*10 + 'X'*50 + '\n' + 'X'*50)
-        print('Esta prueba finaliza en 5 segundos.\n')
-    elif arrayLength == (readingTime - 5) and isResting == True:
+        print('Esta prueba finaliza en 15 segundos.\n')
+    elif arrayLength == (readingTime - 15) and isResting == True:
         print('\n'*2 + 'X'*50 + '\n' + 'X'*50)
-        print('Esta prueba finaliza en 5 segundos.\n')
+        print('Esta prueba finaliza en 15 segundos.\n')
 
 
 
@@ -180,7 +182,7 @@ if __name__ == '__main__':
         # Loop that runs the different test defined at testQueueArray.
         for test in testsQueueArray:
             print('\n'*2 + '='*100 + '\n' + '='*100 + '\n')
-            print(f"\t{test[0]} Duraci�n: {round(test[2]/60)} minutos.")
+            print(f"\t{test[0]} Duración: {round(test[2]/60)} minutos.")
             print('\n' + '='*100 + '\n' + '='*100 + '\n'*2)
             writeDataPoints(test[1], test[2])
 
@@ -191,6 +193,6 @@ if __name__ == '__main__':
     # Error message when device is not connected or couldn't be found.
     else:
         print(
-            "\nError de conexi�n: No se pudo conectar con el dispositivo MindWave Mobile. "\
-            "Reinicia la diadema y ejecuta de nuevo el c�digo."
+            "\nError de conexión: No se pudo conectar con el dispositivo MindWave Mobile. "\
+            "Reinicia la diadema y ejecuta de nuevo el código."
             )
