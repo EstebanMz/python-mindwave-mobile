@@ -28,6 +28,11 @@ from mindwavemobile.MindwaveDataPointReader import MindwaveDataPointReader
 from MindwaveWriteData import writeData
 import os
 
+
+# ===============
+#   Tests Queue
+# ===============
+
 # Length (rows) for output CSV files.
 SHORT_TEST_LENGTH = 120
 LONG_TEST_LENGTH = 240
@@ -49,29 +54,37 @@ testsQueueArray = [
 ]
 
 
+# ===================================
+#   Print Periodic Text on Terminal
+# ===================================
 
 # Prints the following info when getDataPoints() is running:
 # - A block of text every 5 seconds that tells the volunteer to think in the
 #   correspondent imaginary movement. It takes in mind to not send this
 #   visual signal when it's a resting test.
-# - A notification when there are 15 seconds left for a running test.
+# - A notification when there are 10 seconds left for a running test.
 def printTestInfo(arrayLength, isResting, readingTime):
 
+    # Movement block indicator
     if arrayLength % 5 == 0 and isResting == False:
         print('\n'*10 + 'X'*50 + '\n' + 'X'*50 + '\n' + 'X'*50)
     elif (arrayLength - 1) % 5 == 0 and isResting == False:
         print('')
-    elif (arrayLength + 1) % 15 == 0 and isResting == True:
+    elif (arrayLength + 1) % 20 == 0 and isResting == True:
         print('')
 
-    if arrayLength == (readingTime - 15) and isResting == False:
+    # Test ending message for both types of tests.
+    if arrayLength == (readingTime - 10) and isResting == False:
         print('\n'*10 + 'X'*50 + '\n' + 'X'*50)
-        print('Esta prueba finaliza en 15 segundos.\n')
-    elif arrayLength == (readingTime - 15) and isResting == True:
+        print('Esta prueba finaliza en 10 segundos.\n')
+    elif arrayLength == (readingTime - 10) and isResting == True:
         print('\n'*2 + 'X'*50 + '\n' + 'X'*50)
-        print('Esta prueba finaliza en 15 segundos.\n')
+        print('Esta prueba finaliza en 10 segundos.\n')
 
 
+# =====================================
+#   MindWave DataPoint Read and Write
+# =====================================
 
 # Returns an array with the data read from the sensor. Its size depends on 
 # the value of the readingTime argument.
@@ -147,6 +160,9 @@ def getDataPoints(isResting, readingTime):
     return dataPointsArray
 
 
+# ======================================
+#   Save Test from Array to CSV format
+# ======================================
 
 # Inputs the DataPoints array and outputs the CSV file.
 def writeDataPoints(isResting, readingTime):
@@ -161,8 +177,10 @@ def writeDataPoints(isResting, readingTime):
     exportData.writeFile()
 
 
+# ========================
+#   Main Execution block
+# ========================
 
-# Main Execution block.
 if __name__ == '__main__':
 
     # Clears console at the start.

@@ -11,6 +11,9 @@ class writeData:
         self.data_array = data_array
 
 
+    # ==========================
+    #   Array to CSV Converter
+    # ==========================
 
     # Converts an array into a CSV file which gets stored as "filename" value.
     def writeFile(self):
@@ -27,6 +30,9 @@ class writeData:
         print(f"Data saved to {test_filename}")
 
 
+    # ======================
+    #   Personal Info Form
+    # ======================
 
     # Writes personal data to history.csv.
     def writePersonalData(self):
