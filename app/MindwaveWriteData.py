@@ -6,6 +6,8 @@ import datetime
 import os
 import pandas as pd
 
+folder_path = "output_files/"
+
 class writeData:
     def __init__(self, data_array):
         self.data_array = data_array
@@ -19,7 +21,7 @@ class writeData:
     def writeFile(self):
         # Generate filename with date and time
         now = datetime.datetime.now()
-        test_filename = now.strftime("output_files/%Y-%m-%d %H_%M_%S-MindwaveData.csv")
+        test_filename = now.strftime(folder_path + "%Y-%m-%d %H_%M_%S-MindwaveData.csv")
         
         # Create a DataFrame from the data
         df = pd.DataFrame([x.split(',') for x in self.data_array])
@@ -37,7 +39,7 @@ class writeData:
     # Writes personal data to history.csv.
     def writePersonalData(self):
         # Generate filename for history file.
-        history_filename = "output_files/history.csv"
+        history_filename = folder_path + "history.csv"
         # last_name: The last name of the person.
         # first_name: The first name of the person.
         # age: The age of the person.

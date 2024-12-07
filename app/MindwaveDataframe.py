@@ -12,7 +12,7 @@ import os
 # - output_filename: The name of the output CSV file.
 
 folder_path = "output_files/"
-output_filename = "output_files/MindwaveDB.csv"
+output_filename = folder_path + "MindwaveDB.csv"
 
 def merge_csv_files(folder_path, output_filename):
 
@@ -49,7 +49,7 @@ merge_csv_files(folder_path, output_filename)
 # =========================
 
 # Load the merged CSV file into a pandas DataFrame
-df = pd.read_csv('output_files/MindwaveDB.csv')
+df = pd.read_csv(folder_path + "MindwaveDB.csv")
 
 # Remove rows where 'amount_of_noise' is greater than 0, 
 # and where 'meditation' and 'attention' have a value of 0. Resets the df index.
