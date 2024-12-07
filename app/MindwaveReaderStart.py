@@ -2,7 +2,7 @@
 # @author: Esteban Martinez
 # @github: EstebanMz
 
-# This module reads data from the Mindwave Mobile EEG headset and stores it
+# This module reads EEG data from the Mindwave Mobile headset and stores it
 # as a CSV file inside "output_files" folder. The length of the output files
 # depends on the argument of the function writeDataPoints(), which is called
 # in the Main Execution block by reading testQueueArray, written at the start.
@@ -18,8 +18,9 @@
 # - Raw Data
 # - Meditation
 # - Attention
-# - Blink (Only displays "None")
+# - Blink (Only displays "None", drop the column in preprocessing)
 # - Amount of Noise (also known as Poor Signal Level)
+# - Motor imagination movement Category
 
 import bluetooth
 import datetime
@@ -37,20 +38,24 @@ import os
 SHORT_TEST_LENGTH = 120
 LONG_TEST_LENGTH = 240
 
-# Defines an array with the tests that will be held in the moment
-# the MindWave is connected to this device.
+# Defines an array with the motor imagination tests that will be held 
+# in the moment the MindWave is connected to this device.
 # - test[0]: Name or description of the event.
-# - test[1]: Is a resting test? (read printTestInfo() for context).
+# - test[1]: Event category (other categories can be added with more numbers):
+#            0 = Resting test
+#            1 = Lower Right Limb test
+#            2 = Lower Left Limb test
 # - test[2]: Length of the test, determined by one of the selected values above.
 testsQueueArray = [
-    [f'Prueba corta para Imaginación motora del pie Derecho.', False, SHORT_TEST_LENGTH],
-    [f'Prueba corta para Imaginación motora del pie Izquierdo.', False, SHORT_TEST_LENGTH],
-    [f'Descanso corto.', True, SHORT_TEST_LENGTH],
-    [f'Prueba larga para Imaginación motora del pie Derecho.', False, LONG_TEST_LENGTH],
-    [f'Prueba larga para Imaginación motora del pie Izquierdo.', False, LONG_TEST_LENGTH],
-    [f'Descanso largo.', True, LONG_TEST_LENGTH]
-    # [f'Prueba reposo.', True, 60],                  # Debugging
-    # [f'Prueba imaginación.', False, 30]             # Debugging
+    ['Prueba corta para Imaginación motora del pie Derecho.', 1, SHORT_TEST_LENGTH],
+    ['Prueba corta para Imaginación motora del pie Izquierdo.', 2, SHORT_TEST_LENGTH],
+    ['Descanso corto.', 0, SHORT_TEST_LENGTH],
+    ['Prueba larga para Imaginación motora del pie Derecho.', 1, LONG_TEST_LENGTH],
+    ['Prueba larga para Imaginación motora del pie Izquierdo.', 2, LONG_TEST_LENGTH],
+    ['Descanso largo.', 0, LONG_TEST_LENGTH]
+    # ['Prueba derecha.', 1, 120],                     # Debugging
+    # ['Prueba izquierda.', 2, 240],                 # Debugging
+    # ['Prueba descanso.', 0, 120]                 # Debugging
 ]
 
 
@@ -60,26 +65,26 @@ testsQueueArray = [
 
 # Prints the following info when getDataPoints() is running:
 # - A block of text every 5 seconds that tells the volunteer to think in the
-#   correspondent imaginary movement. It takes in mind to not send this
-#   visual signal when it's a resting test.
+#   corresponding motor imagination movement at the start of the test. 
+#   It takes in mind to not send this visual signal whether it's a resting test.
 # - A notification when there are 10 seconds left for a running test.
-def printTestInfo(arrayLength, isResting, readingTime):
+def printTestInfo(arrayLength, limbToTest, readingTime):
 
     # Movement block indicator
-    if arrayLength % 5 == 0 and isResting == False:
+    if arrayLength % 5 == 0 and limbToTest != 0:
         print('\n'*10 + 'X'*50 + '\n' + 'X'*50 + '\n' + 'X'*50)
-    elif (arrayLength - 1) % 5 == 0 and isResting == False:
+    elif (arrayLength - 1) % 5 == 0 and limbToTest != 0:
         print('')
-    elif (arrayLength + 1) % 20 == 0 and isResting == True:
+    elif (arrayLength + 1) % 20 == 0 and limbToTest == 0:
         print('')
 
     # Test ending message for both types of tests.
-    if arrayLength == (readingTime - 10) and isResting == False:
+    if arrayLength == (readingTime - 10) and limbToTest != 0:
         print('\n'*10 + 'X'*50 + '\n' + 'X'*50)
-        print('Esta prueba finaliza en 10 segundos.\n')
-    elif arrayLength == (readingTime - 10) and isResting == True:
+        print('    Esta prueba finaliza en 10 segundos.')
+    elif arrayLength == (readingTime - 10) and limbToTest == 0:
         print('\n'*2 + 'X'*50 + '\n' + 'X'*50)
-        print('Esta prueba finaliza en 10 segundos.\n')
+        print('    Esta prueba finaliza en 10 segundos.')
 
 
 # =====================================
@@ -88,17 +93,18 @@ def printTestInfo(arrayLength, isResting, readingTime):
 
 # Returns an array with the data read from the sensor. Its size depends on 
 # the value of the readingTime argument.
-# The other argument, isResting, defines the type of test running and will have 
-# a different behavior while printing text to the console.
-def getDataPoints(isResting, readingTime):
+# The other argument, limbToTest, defines a category for when a motor imagination 
+# is displayed on terminal, it also defines the type of test to be executed.
+def getDataPoints(limbToTest, readingTime):
 
     # Initializes the variables of all DataPoint instances.
     rawValue = attention = meditation = amountOfNoise = blink = None
     delta = theta = lowAlpha = highAlpha = lowBeta = highBeta = lowGamma = midGamma = None
+    category = 0    # Motor imagination movement category
 
     # Creates the array that will store the sensor readings.
     eegPower = "delta,theta,low_alpha,high_alpha,low_beta,high_beta,low_gamma,mid_gamma"
-    dataHeader = f"date_time,{eegPower},raw_value,attention,meditation,blink,amount_of_noise"
+    dataHeader = f"date_time,{eegPower},raw_value,attention,meditation,blink,amount_of_noise,category"
     dataPointsArray = [dataHeader]
 
     # DataPoint reading loop.
@@ -146,15 +152,23 @@ def getDataPoints(isResting, readingTime):
 
                 # Saves a row with all the data values read in the instances.
                 dataRow = f"{dateTime},{delta},{theta},{lowAlpha},{highAlpha},"\
-                    f"{lowBeta},{highBeta},{lowGamma},{midGamma},"\
-                    f"{rawValue},{attention},{meditation},{blink},{amountOfNoise}"
+                          f"{lowBeta},{highBeta},{lowGamma},{midGamma},"\
+                          f"{rawValue},{attention},{meditation},{blink},{amountOfNoise},"\
+                          f"{category}"
+
+                # Assigns to "category" the value of the running "limbToTest" value 
+                # the second after a visual signal shows up on terminal.
+                if (len(dataPointsArray) + 1) % 5 == 0 and limbToTest != 0:
+                    category = limbToTest
+                else:
+                    category = 0
 
                 # Adds the data from the sensor as a new row to the array.
                 # print(dataRow)                    # Debugging
                 dataPointsArray.append(dataRow)
 
                 # Calls printTestInfo() function.
-                printTestInfo(len(dataPointsArray), isResting, readingTime)
+                printTestInfo(len(dataPointsArray), limbToTest, readingTime)
 
     # Returns the data array containing all readings from a test.
     return dataPointsArray
@@ -165,10 +179,10 @@ def getDataPoints(isResting, readingTime):
 # ======================================
 
 # Inputs the DataPoints array and outputs the CSV file.
-def writeDataPoints(isResting, readingTime):
+def writeDataPoints(limbToTest, readingTime):
 
     # Executes getDataPoints() function and stores the return result in data
-    data = getDataPoints(isResting, readingTime)
+    data = getDataPoints(limbToTest, readingTime)
 
     # Create an instance of writeData() class
     exportData = writeData(data)
