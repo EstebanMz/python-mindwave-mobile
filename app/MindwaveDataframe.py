@@ -28,10 +28,11 @@ def merge_csv_files(folder_path, output_filename):
     # Get all valid filenames and sort them in ascending order
     all_dataframes = []
     filenames = [filename for filename in os.listdir(folder_path) 
-                 if filename.endswith(".csv") and filename not in ("history.csv", "MindwaveDB.csv")]
+                 if filename.endswith(".csv") and filename not in (
+                    "history.csv", "MindwaveDB.csv")]
     filenames.sort()  
 
-    # Read the files from before and start to store their values in "all_dataframes" array
+    # Read the files from before and store their values in "all_dataframes" array
     for filename in filenames:
         filepath = os.path.join(folder_path, filename)
         try:
@@ -43,7 +44,7 @@ def merge_csv_files(folder_path, output_filename):
         except pd.errors.ParserError:
             print(f"Error: No se pudo analizar el archivo '{filename}'. Se omitirá.")
 
-    # Convert "all_dataframes" array into a DataFrame and export the final result to "MindwaveDB.csv"
+    # Convert "all_dataframes" array into a DataFrame and export it to "MindwaveDB.csv"
     if all_dataframes:
         merged_df = pd.concat(all_dataframes, ignore_index=True)
         merged_df.to_csv(output_filename, index=False)
